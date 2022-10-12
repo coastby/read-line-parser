@@ -29,14 +29,13 @@ public class Hospital {
     }
 
     private void setSubdivision() {
-        String[] subdivisions = {"한의원", "치과", "성형외과", "내과", "소아청소년과", "가정의학과", "피부과", "영상의학과", "정형외과", "산부인과", "재활의학과", "비뇨기과", "안과", "소아과", "정신건강의학과"};
+        String[] subdivisions = {"한의원", "한방병원", "병원", "치과", "성형외과", "내과", "소아청소년과", "가정의학과", "피부과", "영상의학과", "정형외과", "흉부외과", "신경외과","산부인과", "재활의학과", "비뇨기과", "안과", "소아과", "정신건강의학과", "요양병원", "통증의학과"};
         String subdivision = null;
         for (String s : subdivisions) {
             if (name.contains(s)) {
                 subdivision = s;
             }
         }
-
         this.subdivision = subdivision;
     }
 
@@ -66,5 +65,9 @@ public class Hospital {
 
     public String getSubdivision() {
         return subdivision;
+    }
+    public String getAllForSql() {
+        String result = "('"+this.id+"', '"+this.address+"', '"+this.district+"', '"+this.category+"', '"+this.emergencyRoom+"', '"+this.name+"', '"+this.subdivision+"'),";
+        return result;
     }
 }
