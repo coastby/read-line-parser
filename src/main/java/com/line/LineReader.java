@@ -1,5 +1,7 @@
 package com.line;
 
+import com.line.parser.Parser;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -7,9 +9,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class LineReader {
+public class LineReader<T> {
 
-    public List<String> readLines(String filename) throws IOException {
+    Parser<T> parser;
+    boolean isRemoveFirstLine = true;
+    public LineReader(Parser<T> parser) {
+        this.parser = parser;
+    }
+
+    public List<String> readLinesBefore(String filename) throws IOException {
         List<String> result = new ArrayList<>();
         BufferedReader br = new BufferedReader(new FileReader(filename));
         String str;
@@ -19,12 +27,17 @@ public class LineReader {
         return result;
     }
 
-
-    public static void main(String[] args) throws IOException {
-        LineReader lr = new LineReader();
-        String filename = "../data/서울시 병의원 위치 정보.csv";
-        List<String> hospitals = lr.readLines(filename);
-        System.out.println(hospitals.size());
-
+    public List<T> readLines(String filename) throws IOException {
+        List<T> result = new ArrayList<>();
+        BufferedReader br = new BufferedReader(new FileReader(filename));
+        String str;
+        if (isRemoveFirstLine) {
+            br.readLine();
+        }
+        while ((str = br.readLine()) != null) {
+            result.add(parser.parse(str));
+        }
+        return result;
     }
+
 }
