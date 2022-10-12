@@ -4,6 +4,7 @@ import com.line.domain.Hospital;
 import com.line.parser.HospitalParser;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
@@ -13,8 +14,8 @@ public class Main {
         List<Hospital> hospitals = hospitalLineReader.readLines(filename);
 
         for (Hospital hospital : hospitals) {
-            System.out.println(hospital.getId()+" "+hospital.getCategory()+" "+hospital.getName());
+            String line = hospital.getAllForSql();
+            System.out.println(line);
         }
-        System.out.println(hospitals.size());
     }
 }

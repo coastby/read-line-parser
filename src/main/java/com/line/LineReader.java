@@ -12,7 +12,7 @@ import java.util.List;
 public class LineReader<T> {
 
     Parser<T> parser;
-    boolean isRemoveFirstLine = true;
+    boolean isRemoveFirstLine = false;
     public LineReader(Parser<T> parser) {
         this.parser = parser;
     }
