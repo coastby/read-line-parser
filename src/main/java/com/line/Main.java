@@ -9,9 +9,12 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) throws IOException {
         LineReader<Hospital> hospitalLineReader = new LineReader<>(new HospitalParser());
-        String filename = "../data/서울시 병의원 위치 정보.csv";
+        String filename = "../data/서울시병의원위치11.csv";
         List<Hospital> hospitals = hospitalLineReader.readLines(filename);
 
+        for (Hospital hospital : hospitals) {
+            System.out.println(hospital.getId()+" "+hospital.getCategory()+" "+hospital.getName());
+        }
         System.out.println(hospitals.size());
     }
 }
