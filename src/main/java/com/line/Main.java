@@ -21,13 +21,14 @@ public class Main {
             String line = hospital.getAllForSql();
             lines.add(line);
         }
+        System.out.println(hospitals.size());
 
-
-        File file = new File("./src/main/java/com/line/seoul_hospital_insert.sql");
-        BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-        for (String line : lines) {
-            writer.write(line);
-        }
-        writer.close();
+        //파일에 쓰는 코드 : 덮어써지니 돌리기 전 확인
+//        File file = new File("./src/main/java/com/line/seoul_hospital_insert.sql");
+//        BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+//        for (String line : lines) {
+//            writer.write(line);
+//        }
+//        writer.close();
     }
 }
