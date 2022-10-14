@@ -10,6 +10,8 @@ public class Hospital {
     private String name;
     private String subdivision;
 
+
+
     public Hospital(String id, String address, String category, Integer emergencyRoom, String name, String subdivision) {
         this.id = id;
         this.address = address;
@@ -55,7 +57,8 @@ public class Hospital {
         return subdivision;
     }
     public String getAllForSql() {
-        String result = "('"+this.id+"', '"+this.address+"', '"+this.district+"', '"+this.category+"', '"+this.emergencyRoom+"', '"+this.name+"', '"+this.subdivision+"'),\n";
+        String result = "INSERT INTO `likelion-db`.`seoul_hospital` (`id`,`address`,`district`,`category`,`emergency_room`,`name`,`subdivision`)" +
+                " VALUES ('"+this.id+"', '"+this.address+"', '"+this.district+"', '"+this.category+"', '"+this.emergencyRoom+"', '"+this.name+"', '"+this.subdivision+"');\n";
         return result;
     }
 }

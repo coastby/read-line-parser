@@ -42,3 +42,4 @@ bin/
 ### Mac OS ###
 .DS_Store
 .idea/
+/src/main/java/com/line/javaPrac2.java

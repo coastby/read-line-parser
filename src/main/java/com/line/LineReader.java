@@ -12,7 +12,7 @@ import java.util.List;
 public class LineReader<T> {
 
     Parser<T> parser;
-    boolean isRemoveFirstLine = false;
+    boolean isRemoveFirstLine = true;
     public LineReader(Parser<T> parser) {
         this.parser = parser;
     }
@@ -31,6 +31,7 @@ public class LineReader<T> {
         List<T> result = new ArrayList<>();
         BufferedReader br = new BufferedReader(new FileReader(filename));
         String str;
+        //첫 번째줄 버림 : default는 true로 되어있다.
         if (isRemoveFirstLine) {
             br.readLine();
         }
