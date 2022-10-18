@@ -1,8 +1,10 @@
 package com.line.dao;
 
+import com.line.LineReader;
 import com.line.domain.Hospital;
 import com.line.parser.HospitalParser;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,21 +13,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HospitalDao {
-    //미완성
-    public void add(List<Hospital> hospitals) throws SQLException, ClassNotFoundException {
+    //csv filename 입력하면 sql로 저장
+    public void add(String filename) throws SQLException, ClassNotFoundException, IOException {
         ConnectionMaker cm = new ConnectionMaker();
+        LineReader lr = new LineReader(new HospitalParser());
         Connection conn = cm.makeConnection();
 
         PreparedStatement ps = conn.prepareStatement("INSERT INTO seoul_hospital(id, address, district, category, emergency_room, name, subdivision)"
                 +"VALUES (?, ?, ?, ?, ?, ?, ?);");
+        List<Hospital> hospitals= lr.readLines(filename);
+        for (Hospital hospital : hospitals) {
+            ps.setString(1, hospital.getId());
+            ps.setString(2, hospital.getAddress());
+            ps.setString(3, hospital.getDistrict());
+            ps.setString(4, hospital.getCategory());
+            ps.setInt(5, hospital.getEmergencyRoom());
+            ps.setString(6, hospital.getName());
+            ps.setString(7, hospital.getSubdivision());
 
-        ps.setString(1, "");
-        ps.setString(2, "");
-        ps.setString(3, "");
-        ps.setString(4, "");
-        ps.setInt(5, 0);
-        ps.setString(6, "");
-        ps.setString(7, "");
+        }
+
 
         ps.executeUpdate();
         ps.close();
@@ -34,12 +41,8 @@ public class HospitalDao {
 
     /**
      * 병원이름을 파라미터로 넘겨주면 데이터에서 해당되는 Hospital 객체 리스트를 반환하는 메서드
-     * @param name
-     * @return List<Hospital></Hospital>
-     * @throws SQLException
-     * @throws ClassNotFoundException
      */
-    public List<Hospital> getByName(String name) throws SQLException, ClassNotFoundException {
+    public List<Hospital> findByName(String name) throws SQLException, ClassNotFoundException {
         Connection conn = new ConnectionMaker().makeConnection();
 
         PreparedStatement ps = conn.prepareStatement("SELECT id, address, category, emergency_room, name, subdivision FROM seoul_hospital WHERE name=?");
@@ -63,7 +66,7 @@ public class HospitalDao {
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
         HospitalDao hd = new HospitalDao();
-        List<Hospital> hs = hd.getByName("삼성서울병원");
+        List<Hospital> hs = hd.findByName("삼성서울병원");
         for (Hospital h : hs) {
             System.out.println(h.getAddress());
         }

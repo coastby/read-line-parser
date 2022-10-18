@@ -12,6 +12,10 @@ public class HospitalParser implements Parser<Hospital> {
                 subdivision = s;
             }
         }
+        //정형외과 키워드 추가???
+//        if (name.contains("마디")){
+//            subdivision = "정형외과";
+//        }
         return subdivision;
     }
 
