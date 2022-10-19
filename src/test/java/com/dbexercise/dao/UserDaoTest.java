@@ -3,18 +3,27 @@ package com.dbexercise.dao;
 import com.dbexercise.domain.User;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.sql.SQLException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = UserDaoFactory.class)
 class UserDaoTest {
-    //    UserDao userDao = new UserDao(new AwsConnectionMaker());
-    UserDao userDao = new UserDaoFactory().awsUserDao();
+    @Autowired
+    ApplicationContext context;
+
     @Test
     void addAndSelect () throws SQLException {
-        String id = "5";
+        UserDao userDao = context.getBean("awsUserDao", UserDao.class);
+        String id = "1";
         User user = new User(id, "jo", "coconut");
         userDao.add(user);
 
@@ -24,6 +33,7 @@ class UserDaoTest {
 
     @Test
     void findAllTest() throws SQLException {
+        UserDao userDao = context.getBean("awsUserDao", UserDao.class);
         List<User> userList = userDao.findAll();
         for (User user : userList) {
             System.out.println(user.getName());
@@ -33,6 +43,7 @@ class UserDaoTest {
 
     @Test
     void deleteByIdTest() throws SQLException {
+        UserDao userDao = context.getBean("awsUserDao", UserDao.class);
         String id = "100";
         User user = new User(id, "jo", "coconut");
         userDao.add(user);
@@ -45,6 +56,7 @@ class UserDaoTest {
 
     @Test
     void deleteAllandCountTest() throws SQLException {
+        UserDao userDao = context.getBean("awsUserDao", UserDao.class);
         userDao.deleteAll();
 
         Assertions.assertEquals(0, userDao.getCount());
@@ -53,6 +65,7 @@ class UserDaoTest {
     //Assertion은 어떻게 할 지 생각해봐야겠음
     @Test
     void getCountTest() throws SQLException {
+        UserDao userDao = context.getBean("awsUserDao", UserDao.class);
         System.out.println(userDao.getCount());
     }
 
