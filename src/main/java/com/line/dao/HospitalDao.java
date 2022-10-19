@@ -1,6 +1,6 @@
 package com.line.dao;
 
-import com.line.LineReader;
+import com.line.parser.LineReader;
 import com.line.domain.Hospital;
 import com.line.parser.HospitalParser;
 

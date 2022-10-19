@@ -1,4 +1,4 @@
-package com.line;
+package com.line.parser;
 
 import com.line.parser.Parser;
 

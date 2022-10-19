@@ -1,4 +1,4 @@
-package com.line;
+package com.line.parser;
 
 import java.io.*;
 import java.util.List;
