@@ -16,6 +16,9 @@ import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = UserDaoFactory.class)
@@ -29,11 +32,12 @@ class UserDaoTest {
 
 
     @BeforeEach
-    void setContext(){
+    void setContext() throws SQLException {
         userDao = context.getBean("awsUserDao", UserDao.class);
         user1 = new User("1", "hoon", "hungry");
         user2 = new User("2", "tobby", "spring");
         user3 = new User("3", "dd", "work");
+
     }
 
     @Test
@@ -44,21 +48,22 @@ class UserDaoTest {
         userDao.add(user3);
         //findById() id로 가져온 정보가 맞는 지 확인
         User userT = userDao.findById(user1.getId());
-        Assertions.assertEquals(user1.getName(), userT.getName());
-        Assertions.assertEquals(user1.getPassword(), userT.getPassword());
+        assertEquals(user1.getName(), userT.getName());
+        assertEquals(user1.getPassword(), userT.getPassword());
 
         //아이디가 중복될 때 예외처리되는지 확인
-        Assertions.assertThrows(SQLIntegrityConstraintViolationException.class, () ->{
+        assertThrows(SQLIntegrityConstraintViolationException.class, () ->{
             userDao.add(user1);
         });
 
         //없는 id를 찾을 때 예외처리되는지 확인
-        Assertions.assertThrows(EmptyResultDataAccessException.class, () -> {
+        assertThrows(EmptyResultDataAccessException.class, () -> {
             User user = userDao.findById("4");
         });
 
     }
 
+    //미완성
     @Test
     void findAllTest() throws SQLException {
         userDao.add(user1);
@@ -67,21 +72,22 @@ class UserDaoTest {
 
         List<User> userList = userDao.findAll();
 //        for (User user : userList) {
-//            Assertions.assertEquals(name, user.getName());
+//            assertEquals(name, user.getName());
 //        }
 
     }
 
     @Test
     void deleteByIdTest() throws SQLException {
-        String id = "100";
-        User user = new User(id, "jo", "coconut");
-        userDao.add(user);
+        userDao.add(user1);
+        userDao.add(user2);
+        userDao.add(user3);
 
-        userDao.deleteById(id);
+        userDao.deleteById(user1.getId());
 
-        User user1 = userDao.findById(id);
-        Assertions.assertNull(user1);
+        assertThrows(EmptyResultDataAccessException.class, () -> {
+            User userT = userDao.findById(user1.getId());
+        });
     }
     @Test
     void getCountTest() throws SQLException {
@@ -89,16 +95,16 @@ class UserDaoTest {
         userDao.add(user2);
         userDao.add(user3);
 
-        Assertions.assertEquals(3, userDao.getCount());
+        assertEquals(3, userDao.getCount());
 
         userDao.deleteById("1");
-        Assertions.assertEquals(2, userDao.getCount());
+        assertEquals(2, userDao.getCount());
     }
 
     @Test
     void deleteAllandCountTest(){
         userDao.deleteAll();
-        Assertions.assertEquals(0, userDao.getCount());
+        assertEquals(0, userDao.getCount());
     }
 
     @AfterEach

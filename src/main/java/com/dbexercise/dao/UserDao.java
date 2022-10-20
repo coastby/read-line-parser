@@ -17,106 +17,206 @@ public class UserDao {
     }
 
     public void add(User user) throws SQLException {
-        Connection conn = connectionMaker.makeConnection();
+        Connection conn = null;
+        PreparedStatement ps = null;
 
-        PreparedStatement ps = conn.prepareStatement("INSERT INTO Users(id, name, password) VALUES(?, ?, ?)");
-        ps.setString(1, user.getId());
-        ps.setString(2, user.getName());
-        ps.setString(3, user.getPassword());
-
-        //ctrl+enter
         try {
+            conn = connectionMaker.makeConnection();
+
+            ps = conn.prepareStatement("INSERT INTO Users(id, name, password) VALUES(?, ?, ?)");
+            ps.setString(1, user.getId());
+            ps.setString(2, user.getName());
+            ps.setString(3, user.getPassword());
+
             ps.executeUpdate();
-        } catch (SQLException e) {
+        } catch (SQLIntegrityConstraintViolationException e) {
             throw new SQLIntegrityConstraintViolationException(e);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if(ps != null){
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                }
+            }
         }
-        ps.close();
-        conn.close();
     }
 
     public User findById(String id) throws SQLException {
-        Connection conn = connectionMaker.makeConnection();
-        //쿼리를 작성하는 코드
-        PreparedStatement ps = conn.prepareStatement("SELECT id, name, password FROM Users WHERE id=?");
-        ps.setString(1, id);
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = connectionMaker.makeConnection();
+            ps = conn.prepareStatement("SELECT id, name, password FROM Users WHERE id=?");
+            ps.setString(1, id);
 
-        ResultSet rs = ps.executeQuery();
-        User user = null;
+            rs = ps.executeQuery();
+            User user = null;
 
-        if (rs.next()){         //찾는 아이디가 있으면 해당 객체 반환, 없으면 null 반환
-            user = new User(rs.getString("id"), rs.getString("name"), rs.getString("password"));
+            if (rs.next()){         //찾는 아이디가 있으면 해당 객체 반환, 없으면 null 반환
+                user = new User(rs.getString("id"), rs.getString("name"), rs.getString("password"));
+            }
+
+            //user가 null이면 예외발생시킴
+            if (user == null) {throw new EmptyResultDataAccessException(1);}
+            return user;
+        } catch (SQLException e) {
+            throw e;
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                }
+            }
         }
-
-        //user가 null이면 예외발생시킴
-        if (user == null) {throw new EmptyResultDataAccessException(1);}
-
-        rs.close();
-        ps.close();
-        conn.close();
-
-        return user;
     }
     public List<User> findAll() throws SQLException {
-        Connection conn = connectionMaker.makeConnection();
-        //쿼리를 작성하는 코드
-        PreparedStatement ps = conn.prepareStatement("SELECT * FROM Users");
-        ResultSet rs = ps.executeQuery();
-        List<User> userList = new ArrayList<>();
-        while(rs.next()){
-            User user = new User(rs.getString("id"), rs.getString("name"), rs.getString("password"));
-            userList.add(user);
-        }
-        rs.close();
-        ps.close();
-        conn.close();
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
 
-        return userList;
+        try {
+            conn = connectionMaker.makeConnection();
+            //쿼리를 작성하는 코드
+            ps = conn.prepareStatement("SELECT * FROM Users");
+            rs = ps.executeQuery();
+            List<User> userList = new ArrayList<>();
+            while(rs.next()){
+                User user = new User(rs.getString("id"), rs.getString("name"), rs.getString("password"));
+                userList.add(user);
+            }
+            return userList;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                }
+            }
+        }
     }
 
     public void deleteById(String id) throws SQLException {
-        Connection conn = connectionMaker.makeConnection();
-        //쿼리를 작성하는 코드
-        PreparedStatement ps = conn.prepareStatement("DELETE FROM Users WHERE id=?");
-        ps.setString(1, id);
-        ps.executeUpdate();
+        Connection conn = null;
+        PreparedStatement ps = null;
 
-        ps.close();
-        conn.close();
+        try {
+            conn = connectionMaker.makeConnection();
+
+            ps = conn.prepareStatement("DELETE FROM Users WHERE id=?");
+            ps.setString(1, id);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if(ps != null){
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                }
+            }
+        }
     }
 
     public void deleteAll() {
         Connection conn = null;
+        PreparedStatement ps = null;
         try {
             conn = connectionMaker.makeConnection();
-            PreparedStatement ps = conn.prepareStatement("DELETE FROM Users");
+            ps = conn.prepareStatement("DELETE FROM Users");
             ps.executeUpdate();
 
-            ps.close();
-            conn.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        } finally {
+            if(ps != null){
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                }
+            }
         }
-        //쿼리를 작성하는 코드
     }
 
     public int getCount(){
         Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         try {
             conn = connectionMaker.makeConnection();
-            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) AS COUNT FROM Users");
-            ResultSet rs = ps.executeQuery();
+            ps = conn.prepareStatement("SELECT COUNT(*) AS COUNT FROM Users");
+            rs = ps.executeQuery();
             rs.next();
             int cnt = rs.getInt("COUNT");
-            rs.close();
-            ps.close();
-            conn.close();
             return cnt;
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                }
+            }
         }
-        //쿼리를 작성하는 코드
-
     }
-
-
 }
