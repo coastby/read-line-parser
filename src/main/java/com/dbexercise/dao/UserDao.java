@@ -2,11 +2,9 @@ package com.dbexercise.dao;
 
 
 import com.dbexercise.domain.User;
+import org.springframework.dao.EmptyResultDataAccessException;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +25,11 @@ public class UserDao {
         ps.setString(3, user.getPassword());
 
         //ctrl+enter
-        ps.executeUpdate();
+        try {
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new SQLIntegrityConstraintViolationException(e);
+        }
         ps.close();
         conn.close();
     }
@@ -39,16 +41,15 @@ public class UserDao {
         ps.setString(1, id);
 
         ResultSet rs = ps.executeQuery();
-        User user;
+        User user = null;
 
         if (rs.next()){         //찾는 아이디가 있으면 해당 객체 반환, 없으면 null 반환
             user = new User(rs.getString("id"), rs.getString("name"), rs.getString("password"));
-        } else {
-            System.out.println("찾는 ID가 없습니다.");
-            return null;
         }
 
-        System.out.println("SELECT 완료");
+        //user가 null이면 예외발생시킴
+        if (user == null) {throw new EmptyResultDataAccessException(1);}
+
         rs.close();
         ps.close();
         conn.close();
@@ -65,7 +66,6 @@ public class UserDao {
             User user = new User(rs.getString("id"), rs.getString("name"), rs.getString("password"));
             userList.add(user);
         }
-        System.out.println("SELECT 완료");
         rs.close();
         ps.close();
         conn.close();
@@ -80,34 +80,42 @@ public class UserDao {
         ps.setString(1, id);
         ps.executeUpdate();
 
-        System.out.println(id +" 삭제 완료");
         ps.close();
         conn.close();
     }
 
-    public void deleteAll() throws SQLException {
-        Connection conn = connectionMaker.makeConnection();
-        //쿼리를 작성하는 코드
-        PreparedStatement ps = conn.prepareStatement("TRUNCATE TABLE Users");
-        ps.executeUpdate();
+    public void deleteAll() {
+        Connection conn = null;
+        try {
+            conn = connectionMaker.makeConnection();
+            PreparedStatement ps = conn.prepareStatement("DELETE FROM Users");
+            ps.executeUpdate();
 
-        System.out.println("테이블 비우기 완료");
-        ps.close();
-        conn.close();
+            ps.close();
+            conn.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        //쿼리를 작성하는 코드
     }
 
-    public int getCount() throws SQLException {
-        Connection conn = connectionMaker.makeConnection();
+    public int getCount(){
+        Connection conn = null;
+        try {
+            conn = connectionMaker.makeConnection();
+            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) AS COUNT FROM Users");
+            ResultSet rs = ps.executeQuery();
+            rs.next();
+            int cnt = rs.getInt("COUNT");
+            rs.close();
+            ps.close();
+            conn.close();
+            return cnt;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         //쿼리를 작성하는 코드
-        PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) AS COUNT FROM Users");
-        ResultSet rs = ps.executeQuery();
-        rs.next();
-        int cnt = rs.getInt("COUNT");
-        rs.close();
-        ps.close();
-        conn.close();
 
-        return cnt;
     }
 
 
