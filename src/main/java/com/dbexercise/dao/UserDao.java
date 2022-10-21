@@ -16,7 +16,7 @@ public class UserDao {
         this.connectionMaker = connectionMaker;
     }
 
-    public void add(User user) throws SQLException {
+    public void add(User user) throws SQLIntegrityConstraintViolationException {
         Connection conn = null;
         PreparedStatement ps = null;
 
@@ -49,7 +49,7 @@ public class UserDao {
         }
     }
 
-    public User findById(String id) throws SQLException {
+    public User findById(String id){
         Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -69,7 +69,7 @@ public class UserDao {
             if (user == null) {throw new EmptyResultDataAccessException(1);}
             return user;
         } catch (SQLException e) {
-            throw e;
+            throw new RuntimeException(e);
         } finally {
             if (rs != null) {
                 try {
@@ -91,7 +91,7 @@ public class UserDao {
             }
         }
     }
-    public List<User> findAll() throws SQLException {
+    public List<User> findAll(){
         Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -131,7 +131,7 @@ public class UserDao {
         }
     }
 
-    public void deleteById(String id) throws SQLException {
+    public void deleteById(String id){
         Connection conn = null;
         PreparedStatement ps = null;
 
@@ -164,7 +164,8 @@ public class UserDao {
         PreparedStatement ps = null;
         try {
             conn = connectionMaker.makeConnection();
-            ps = conn.prepareStatement("DELETE FROM Users");
+
+            ps = new DeleteAllStatement().makePreparedStatement(conn);
             ps.executeUpdate();
 
         } catch (SQLException e) {
