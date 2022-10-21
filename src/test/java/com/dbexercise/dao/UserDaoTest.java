@@ -102,7 +102,7 @@ class UserDaoTest {
     }
 
     @Test
-    void deleteAllandCountTest() throws SQLIntegrityConstraintViolationException {
+    void deleteAllandCountTest() throws SQLException {
         userDao.add(user1);
         userDao.add(user2);
         userDao.add(user3);
@@ -111,7 +111,7 @@ class UserDaoTest {
     }
 
     @AfterEach
-    void after(){
+    void after() throws SQLException {
         userDao.deleteAll();
     }
 }

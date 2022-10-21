@@ -16,23 +16,19 @@ public class UserDao {
         this.connectionMaker = connectionMaker;
     }
 
-    public void add(User user) throws SQLIntegrityConstraintViolationException {
+    public void jdbcContextWithStatementStrategy(StatementStrategy stmt) throws SQLException {
         Connection conn = null;
         PreparedStatement ps = null;
-
         try {
             conn = connectionMaker.makeConnection();
 
-            ps = conn.prepareStatement("INSERT INTO Users(id, name, password) VALUES(?, ?, ?)");
-            ps.setString(1, user.getId());
-            ps.setString(2, user.getName());
-            ps.setString(3, user.getPassword());
-
+            ps = stmt.makePreparedStatement(conn);
             ps.executeUpdate();
+
         } catch (SQLIntegrityConstraintViolationException e) {
             throw new SQLIntegrityConstraintViolationException(e);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw e;
         } finally {
             if(ps != null){
                 try {
@@ -47,6 +43,11 @@ public class UserDao {
                 }
             }
         }
+    }
+
+    public void add(User user) throws SQLException {
+        AddStatement addStatement = new AddStatement(user);
+        jdbcContextWithStatementStrategy(addStatement);
     }
 
     public User findById(String id){
@@ -159,31 +160,8 @@ public class UserDao {
         }
     }
 
-    public void deleteAll() {
-        Connection conn = null;
-        PreparedStatement ps = null;
-        try {
-            conn = connectionMaker.makeConnection();
-
-            ps = new DeleteAllStatement().makePreparedStatement(conn);
-            ps.executeUpdate();
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            if(ps != null){
-                try {
-                    ps.close();
-                } catch (SQLException e) {
-                }
-            }
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (SQLException e) {
-                }
-            }
-        }
+    public void deleteAll() throws SQLException {
+        jdbcContextWithStatementStrategy(new DeleteAllStatement());
     }
 
     public int getCount(){
