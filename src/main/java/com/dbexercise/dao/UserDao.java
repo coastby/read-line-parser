@@ -4,23 +4,24 @@ package com.dbexercise.dao;
 import com.dbexercise.domain.User;
 import org.springframework.dao.EmptyResultDataAccessException;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class UserDao {
 
-    private ConnectionMaker connectionMaker;
+    private DataSource dataSource;
 
-    public UserDao(ConnectionMaker connectionMaker) {
-        this.connectionMaker = connectionMaker;
+    public UserDao(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     public void jdbcContextWithStatementStrategy(StatementStrategy stmt) throws SQLException {
         Connection conn = null;
         PreparedStatement ps = null;
         try {
-            conn = connectionMaker.makeConnection();
+            conn = dataSource.getConnection();
 
             ps = stmt.makePreparedStatement(conn);
             ps.executeUpdate();
@@ -46,7 +47,7 @@ public class UserDao {
     }
 
     public void add(final User user) throws SQLException {
-        class AddStatement implements StatementStrategy {
+        StatementStrategy st = new AddStatement(user) {
             @Override
             public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
                 PreparedStatement ps = c.prepareStatement("INSERT INTO Users(id, name, password) VALUES(?, ?, ?)");
@@ -56,8 +57,7 @@ public class UserDao {
 
                 return ps;
             }
-        }
-        StatementStrategy st = new AddStatement();
+        };
         jdbcContextWithStatementStrategy(st);
     }
 
@@ -66,7 +66,7 @@ public class UserDao {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            conn = connectionMaker.makeConnection();
+            conn = dataSource.getConnection();
             ps = conn.prepareStatement("SELECT id, name, password FROM Users WHERE id=?");
             ps.setString(1, id);
 
@@ -109,7 +109,7 @@ public class UserDao {
         ResultSet rs = null;
 
         try {
-            conn = connectionMaker.makeConnection();
+            conn = dataSource.getConnection();
             //쿼리를 작성하는 코드
             ps = conn.prepareStatement("SELECT * FROM Users");
             rs = ps.executeQuery();
@@ -148,7 +148,7 @@ public class UserDao {
         PreparedStatement ps = null;
 
         try {
-            conn = connectionMaker.makeConnection();
+            conn = dataSource.getConnection();
 
             ps = conn.prepareStatement("DELETE FROM Users WHERE id=?");
             ps.setString(1, id);
@@ -180,7 +180,7 @@ public class UserDao {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            conn = connectionMaker.makeConnection();
+            conn = dataSource.getConnection();
             ps = conn.prepareStatement("SELECT COUNT(*) AS COUNT FROM Users");
             rs = ps.executeQuery();
             rs.next();
