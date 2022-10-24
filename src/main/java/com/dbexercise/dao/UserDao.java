@@ -2,7 +2,8 @@ package com.dbexercise.dao;
 
 
 import com.dbexercise.domain.User;
-import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -10,178 +11,55 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserDao {
-    //DataSource를 의존한다.
-    private DataSource dataSource;
-    private JdbcContext jdbcContext;
-    //생성자에 DataSource 초가화
+    private JdbcTemplate jdbcTemplate;
 
-    //JdbcContext도 DataSource를 이용해 초기화
+    //JdbcContext를 JdbcTemplate으로 완전히 대체
+    //JdbcTemplate DataSource를 이용해 초기화
     public UserDao(DataSource dataSource) {
-        this.dataSource = dataSource;
-        this.jdbcContext = new JdbcContext(dataSource);
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
-    //내부 클래스를 적용하여 여기서만 사용하는 클래스는 메소드 안에 정의한다.
-    public void add(final User user) throws SQLException {
-        jdbcContext.workWithStatementStrategy(new StatementStrategy() {
-            @Override
-            public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
-                PreparedStatement ps = c.prepareStatement("INSERT INTO Users(id, name, password) VALUES(?, ?, ?)");
-                ps.setString(1, user.getId());
-                ps.setString(2, user.getName());
-                ps.setString(3, user.getPassword());
-
-                return ps;
-            }
-        });
+    //Jdbc Template 적용
+    public void add(final User user){
+        this.jdbcTemplate.update("INSERT INTO Users(id, name, password) VALUES(?, ?, ?);",
+                user.getId(), user.getName(), user.getPassword());
     }
-    public void deleteAll() throws SQLException {
-        this.jdbcContext.executeSql("DELETE FROM Users;");
+    //Jdbc Template 적용
+    public void deleteAll(){
+        this.jdbcTemplate.update("DELETE FROM Users;");
     }
 
+    //RowMapper 이용
     public User findById(String id){
-        Connection conn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            conn = dataSource.getConnection();
-            ps = conn.prepareStatement("SELECT id, name, password FROM Users WHERE id=?");
-            ps.setString(1, id);
-
-            rs = ps.executeQuery();
-            User user = null;
-
-            if (rs.next()){         //찾는 아이디가 있으면 해당 객체 반환, 없으면 null 반환
-                user = new User(rs.getString("id"), rs.getString("name"), rs.getString("password"));
-            }
-
-            //user가 null이면 예외발생시킴
-            if (user == null) {throw new EmptyResultDataAccessException(1);}
-            return user;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (rs != null) {
-                try {
-                    rs.close();
-                } catch (SQLException e) {
-                }
-            }
-            if (ps != null) {
-                try {
-                    ps.close();
-                } catch (SQLException e) {
-                }
-            }
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (SQLException e) {
-                }
-            }
-        }
-    }
-    public List<User> findAll(){
-        Connection conn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-
-        try {
-            conn = dataSource.getConnection();
-            //쿼리를 작성하는 코드
-            ps = conn.prepareStatement("SELECT * FROM Users");
-            rs = ps.executeQuery();
-            List<User> userList = new ArrayList<>();
-            while(rs.next()){
+        String sql = "SELECT id, name, password FROM Users WHERE id=?";
+        RowMapper<User> rowMapper = new RowMapper<User>() {
+            @Override
+            public User mapRow(ResultSet rs, int rowNum) throws SQLException {
                 User user = new User(rs.getString("id"), rs.getString("name"), rs.getString("password"));
-                userList.add(user);
+                return user;
             }
-            return userList;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (rs != null) {
-                try {
-                    rs.close();
-                } catch (SQLException e) {
-                }
+        };
+        return this.jdbcTemplate.queryForObject(sql, rowMapper, id);
+    }
+
+    public List<User> findAll(){
+        String sql = "SELECT * FROM Users;";
+        RowMapper<User> rowMapper = new RowMapper<User>() {
+            @Override
+            public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+                User user = new User(rs.getString("id"), rs.getNString("name"), rs.getString("password"));
+                return user;
             }
-            if (ps != null) {
-                try {
-                    ps.close();
-                } catch (SQLException e) {
-                }
-            }
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (SQLException e) {
-                }
-            }
-        }
+        };
+        return this.jdbcTemplate.query(sql, rowMapper);
     }
 
     public void deleteById(String id){
-        Connection conn = null;
-        PreparedStatement ps = null;
-
-        try {
-            conn = dataSource.getConnection();
-
-            ps = conn.prepareStatement("DELETE FROM Users WHERE id=?");
-            ps.setString(1, id);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            if(ps != null){
-                try {
-                    ps.close();
-                } catch (SQLException e) {
-                }
-            }
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (SQLException e) {
-                }
-            }
-        }
+        this.jdbcTemplate.update("DELETE FROM Users WHERE id=?;", id);
     }
 
 
     public int getCount(){
-        Connection conn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            conn = dataSource.getConnection();
-            ps = conn.prepareStatement("SELECT COUNT(*) AS COUNT FROM Users");
-            rs = ps.executeQuery();
-            rs.next();
-            int cnt = rs.getInt("COUNT");
-            return cnt;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (rs != null) {
-                try {
-                    rs.close();
-                } catch (SQLException e) {
-                }
-            }
-            if (ps != null) {
-                try {
-                    ps.close();
-                } catch (SQLException e) {
-                }
-            }
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (SQLException e) {
-                }
-            }
-        }
+        return this.jdbcTemplate.queryForObject("SELECT COUNT(*) AS COUNT FROM Users", Integer.class);
     }
 }

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -52,7 +53,7 @@ class UserDaoTest {
         assertEquals(user1.getPassword(), userT.getPassword());
 
         //아이디가 중복될 때 예외처리되는지 확인
-        assertThrows(SQLIntegrityConstraintViolationException.class, () ->{
+        assertThrows(DuplicateKeyException.class, () ->{
             userDao.add(user1);
         });
 
@@ -63,7 +64,6 @@ class UserDaoTest {
 
     }
 
-    //미완성
     @Test
     void findAllTest() throws SQLException {
         userDao.add(user1);
@@ -71,9 +71,8 @@ class UserDaoTest {
         userDao.add(user3);
 
         List<User> userList = userDao.findAll();
-//        for (User user : userList) {
-//            assertEquals(name, user.getName());
-//        }
+
+        assertEquals(3, userList.size());
 
     }
 
