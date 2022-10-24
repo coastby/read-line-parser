@@ -35,6 +35,9 @@ public class UserDao {
             }
         });
     }
+    public void deleteAll() throws SQLException {
+        this.jdbcContext.executeSql("DELETE FROM Users;");
+    }
 
     public User findById(String id){
         Connection conn = null;
@@ -146,14 +149,6 @@ public class UserDao {
         }
     }
 
-    public void deleteAll() throws SQLException {
-        jdbcContext.workWithStatementStrategy(new StatementStrategy() {
-            @Override
-            public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
-            PreparedStatement ps = c.prepareStatement("delete from Users");
-            return ps;
-        }});
-    }
 
     public int getCount(){
         Connection conn = null;

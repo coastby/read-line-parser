@@ -39,4 +39,13 @@ public class JdbcContext {
             }
         }
     }
+    public void executeSql(String sql) throws SQLException {
+        this.workWithStatementStrategy(new StatementStrategy() {
+            @Override
+            public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
+                PreparedStatement ps = c.prepareStatement(sql);
+                return ps;
+            }
+        });
+    }
 }
