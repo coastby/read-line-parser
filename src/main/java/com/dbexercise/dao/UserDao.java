@@ -10,44 +10,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserDao {
-
+    //DataSource를 의존한다.
     private DataSource dataSource;
+    private JdbcContext jdbcContext;
+    //생성자에 DataSource 초가화
 
+    //JdbcContext도 DataSource를 이용해 초기화
     public UserDao(DataSource dataSource) {
         this.dataSource = dataSource;
+        this.jdbcContext = new JdbcContext(dataSource);
     }
 
-    public void jdbcContextWithStatementStrategy(StatementStrategy stmt) throws SQLException {
-        Connection conn = null;
-        PreparedStatement ps = null;
-        try {
-            conn = dataSource.getConnection();
-
-            ps = stmt.makePreparedStatement(conn);
-            ps.executeUpdate();
-
-        } catch (SQLIntegrityConstraintViolationException e) {
-            throw new SQLIntegrityConstraintViolationException(e);
-        } catch (SQLException e) {
-            throw e;
-        } finally {
-            if(ps != null){
-                try {
-                    ps.close();
-                } catch (SQLException e) {
-                }
-            }
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (SQLException e) {
-                }
-            }
-        }
-    }
-
+    //내부 클래스를 적용하여 여기서만 사용하는 클래스는 메소드 안에 정의한다.
     public void add(final User user) throws SQLException {
-        jdbcContextWithStatementStrategy(new AddStatement(user) {
+        jdbcContext.workWithStatementStrategy(new StatementStrategy() {
             @Override
             public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
                 PreparedStatement ps = c.prepareStatement("INSERT INTO Users(id, name, password) VALUES(?, ?, ?)");
@@ -171,7 +147,7 @@ public class UserDao {
     }
 
     public void deleteAll() throws SQLException {
-        jdbcContextWithStatementStrategy(new DeleteAllStatement() {
+        jdbcContext.workWithStatementStrategy(new StatementStrategy() {
             @Override
             public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
             PreparedStatement ps = c.prepareStatement("delete from Users");

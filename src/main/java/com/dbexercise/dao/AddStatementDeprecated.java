@@ -6,10 +6,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class AddStatement implements StatementStrategy{
+public class AddStatementDeprecated implements StatementStrategy{
     User user;
 
-    public AddStatement(User user) {
+    public AddStatementDeprecated(User user) {
         this.user = user;
     }
 
