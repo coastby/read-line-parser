@@ -47,7 +47,7 @@ public class UserDao {
     }
 
     public void add(final User user) throws SQLException {
-        StatementStrategy st = new AddStatement(user) {
+        jdbcContextWithStatementStrategy(new AddStatement(user) {
             @Override
             public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
                 PreparedStatement ps = c.prepareStatement("INSERT INTO Users(id, name, password) VALUES(?, ?, ?)");
@@ -57,8 +57,7 @@ public class UserDao {
 
                 return ps;
             }
-        };
-        jdbcContextWithStatementStrategy(st);
+        });
     }
 
     public User findById(String id){
@@ -172,7 +171,12 @@ public class UserDao {
     }
 
     public void deleteAll() throws SQLException {
-        jdbcContextWithStatementStrategy(new DeleteAllStatement());
+        jdbcContextWithStatementStrategy(new DeleteAllStatement() {
+            @Override
+            public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
+            PreparedStatement ps = c.prepareStatement("delete from Users");
+            return ps;
+        }});
     }
 
     public int getCount(){
