@@ -7,7 +7,6 @@ import org.springframework.jdbc.core.RowMapper;
 
 import javax.sql.DataSource;
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
 
 public class UserDao {
@@ -18,6 +17,14 @@ public class UserDao {
     public UserDao(DataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
+
+    //RowMapper 공통사항 필드 멤버로 빼주기
+    RowMapper<User> rowMapper = new RowMapper<User>() {
+        @Override
+        public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+            return new User(rs.getString("id"), rs.getString("name"), rs.getString("password"));
+        }
+    };
 
     //Jdbc Template 적용
     public void add(final User user){
@@ -32,25 +39,11 @@ public class UserDao {
     //RowMapper 이용
     public User findById(String id){
         String sql = "SELECT id, name, password FROM Users WHERE id=?";
-        RowMapper<User> rowMapper = new RowMapper<User>() {
-            @Override
-            public User mapRow(ResultSet rs, int rowNum) throws SQLException {
-                User user = new User(rs.getString("id"), rs.getString("name"), rs.getString("password"));
-                return user;
-            }
-        };
         return this.jdbcTemplate.queryForObject(sql, rowMapper, id);
     }
 
     public List<User> findAll(){
         String sql = "SELECT * FROM Users;";
-        RowMapper<User> rowMapper = new RowMapper<User>() {
-            @Override
-            public User mapRow(ResultSet rs, int rowNum) throws SQLException {
-                User user = new User(rs.getString("id"), rs.getNString("name"), rs.getString("password"));
-                return user;
-            }
-        };
         return this.jdbcTemplate.query(sql, rowMapper);
     }
 
